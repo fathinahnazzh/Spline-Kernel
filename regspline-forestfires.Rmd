@@ -1,0 +1,73 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(np)
+library(splines)
+library(caret)
+library(ggplot2)
+```
+
+```{r}
+forestfires=read.csv('forestfires.csv')
+print(forestfires)
+```
+
+```{r}
+sum(is.na(forestfires))
+```
+
+```{r}
+summary(forestfires)
+```
+
+## Seleksi Variabel
+
+```{r}
+model_null=lm(Y ~ 1, data = forestfires)
+model_full=lm(Y ~ ., data = forestfires)  
+
+model_forward=step(model_null, 
+                      scope = formula(model_full), 
+                      direction = "forward")
+
+summary(model_forward)
+```
+
+## Split Data
+
+```{r}
+set.seed(123)
+K=5
+for (k in 1:K) {
+  train_data <- forestfires[folds != k, ]
+  test_data  <- forestfires[folds == k, ]}
+```
+
+## Regresi Spline
+
+```{r}
+model_spline=lm(Y~bs(X, df=3)+DC+DMC, data=train_data)
+pred_spline=predict(model_spline, newdata = test_data)
+```
+
+## Regresi Kernel
+
+```{r}
+bw <- npregbw(Y ~ X + DC + DMC, data = train_data)
+model_kernel <- npreg(bws = bw)
+pred_kernel <- predict(model_kernel, newdata = test_data)
+```
+
+## Evaluasi Model
+
+```{r}
+library(broom)
+```
+
+```{r}
+summary(model_spline)
+summary(model_kernel)
+```
